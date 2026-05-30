@@ -1,0 +1,31 @@
+# PyTorch should be installed separately according to your CUDA version.
+# This project was tested with:
+# torch==2.8.0
+# torchvision==0.23.0
+# torchaudio==2.8.0
+# CUDA 12.8
+#
+# Recommended install command:
+# pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128
+
+# nnU-Net v2
+nnunetv2
+
+# Medical image I/O
+nibabel
+SimpleITK
+
+# Data processing
+numpy
+pandas
+scipy
+scikit-image
+
+# Config
+PyYAML
+
+# Visualization
+matplotlib
+
+# Utilities
+tqdm
