@@ -1,0 +1,35 @@
+project:
+  name: AbdomenSeg_nnUnet
+  dataset_id: 501
+  dataset_name: BTCV
+
+paths:
+  raw_images_dir: ./data/BTCV_raw/images
+  raw_labels_dir: ./data/BTCV_raw/labels
+
+  nnunet_raw: ./nnUNet_workspace/nnUNet_raw
+  nnunet_preprocessed: ./nnUNet_workspace/nnUNet_preprocessed
+  nnunet_results: ./nnUNet_workspace/nnUNet_results
+
+  logs_dir: ./logs
+
+dataset:
+  expected_num_cases: 30
+  expected_label_min: 0
+  expected_label_max: 13
+
+labels:
+  background: 0
+  spleen: 1
+  right_kidney: 2
+  left_kidney: 3
+  gallbladder: 4
+  esophagus: 5
+  liver: 6
+  stomach: 7
+  aorta: 8
+  inferior_vena_cava: 9
+  portal_vein_and_splenic_vein: 10
+  pancreas: 11
+  right_adrenal_gland: 12
+  left_adrenal_gland: 13
