@@ -8,7 +8,7 @@ import numpy as np
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(PROJECT_ROOT))
 
-from utils.config_utils import get_args, load_config
+from utils.config_utils import get_args, load_config  # noqa: E402
 
 
 def resolve_config_path(config_path: str) -> Path:
