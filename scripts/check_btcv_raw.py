@@ -5,19 +5,30 @@ from pathlib import Path
 import nibabel as nib
 import numpy as np
 
-# 项目根目录：当前脚本位于 scripts/ 下，所以 parents[1] 回到项目根目录
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(PROJECT_ROOT))
 
-# BTCV 原始图像与标签目录
-DEFAULT_IMAGES_DIR = PROJECT_ROOT / "data" / "BTCV_raw" / "images"
-DEFAULT_LABELS_DIR = PROJECT_ROOT / "data" / "BTCV_raw" / "labels"
+from utils.config_utils import get_args, load_config
 
-# BTCV 训练集预期包含 30 例带标注数据
-EXPECTED_NUM_CASES = 30
 
-# BTCV 多器官标签应为 0-13，其中 0 为背景，1-13 为器官类别
-EXPECTED_LABEL_MIN = 0
-EXPECTED_LABEL_MAX = 13
+def resolve_config_path(config_path: str) -> Path:
+    """将配置文件路径转换为绝对路径。"""
+    path = Path(config_path)
+
+    if path.is_absolute():
+        return path
+
+    return PROJECT_ROOT / path
+
+
+def resolve_project_path(path: str) -> Path:
+    """将项目内相对路径转换为绝对路径。"""
+    path = Path(path)
+
+    if path.is_absolute():
+        return path
+
+    return PROJECT_ROOT / path
 
 
 def get_nii_files(folder: Path) -> list[Path]:
@@ -26,14 +37,8 @@ def get_nii_files(folder: Path) -> list[Path]:
 
 
 def extract_case_id(filename: str) -> str | None:
-    """
-    从文件名中提取病例编号。
-
-    例如：
-    img0001.nii.gz   -> 0001
-    label0001.nii.gz -> 0001
-    """
-    match = re.search(r"(\d+)", filename)  # 匹配连续的数字
+    """从文件名中提取病例编号。"""
+    match = re.search(r"(\d+)", filename)
 
     if match is None:
         return None
@@ -50,29 +55,33 @@ def load_nifti_shape(path: Path) -> tuple[int, ...]:
 def get_unique_labels(path: Path) -> np.ndarray:
     """读取标签文件中实际出现的类别编号。"""
     label_img = nib.load(str(path))
-    label_data = label_img.get_fdata()
+    label_data = np.asanyarray(label_img.dataobj)
     unique_labels = np.unique(label_data).astype(int)
 
     return unique_labels
 
 
 def main() -> None:
-    """脚本主流程：检查 BTCV 原始数据是否满足后续转换要求。"""
-    images_dir = DEFAULT_IMAGES_DIR
-    labels_dir = DEFAULT_LABELS_DIR
+    """检查 BTCV 原始数据是否满足后续转换要求。"""
+    args = get_args()
+    config_path = resolve_config_path(args.config)
+    config = load_config(str(config_path))
 
-    print("")
-    print("=== BTCV raw dataset check ==✈")
+    images_dir = resolve_project_path(config.paths.raw_images_dir)
+    labels_dir = resolve_project_path(config.paths.raw_labels_dir)
+
+    expected_num_cases = config.dataset.expected_num_cases
+    expected_label_min = config.dataset.expected_label_min
+    expected_label_max = config.dataset.expected_label_max
+
+    print("[INFO] BTCV raw dataset check started.")
     print(f"[INFO] Images dir: {images_dir}")
     print(f"[INFO] Labels dir: {labels_dir}")
-    print()
 
-    # 检查图像文件夹是否存在
     if not images_dir.exists():
         print(f"[ERROR] Images folder does not exist: {images_dir}")
         sys.exit(1)
 
-    # 检查标签文件夹是否存在
     if not labels_dir.exists():
         print(f"[ERROR] Labels folder does not exist: {labels_dir}")
         sys.exit(1)
@@ -82,20 +91,18 @@ def main() -> None:
 
     print(f"[INFO] Found image files: {len(image_files)}")
     print(f"[INFO] Found label files: {len(label_files)}")
-    print()
 
-    # 检查图像数量是否符合 BTCV 训练集预期
-    if len(image_files) != EXPECTED_NUM_CASES:
+    if len(image_files) != expected_num_cases:
         print(
-            f"[WARNING] Expected {EXPECTED_NUM_CASES} images, but found {len(image_files)}."
+            f"[WARNING] Expected {expected_num_cases} images, but found {len(image_files)}."
         )
 
-    # 检查标签数量是否符合 BTCV 训练集预期
-    if len(label_files) != EXPECTED_NUM_CASES:
+    if len(label_files) != expected_num_cases:
         print(
-            f"[WARNING] Expected {EXPECTED_NUM_CASES} labels, but found {len(label_files)}."
+            f"[WARNING] Expected {expected_num_cases} labels, but found {len(label_files)}."
         )
-        image_map = {}
+
+    image_map = {}
     label_map = {}
 
     # 建立 image case_id -> image path 的映射
@@ -135,10 +142,9 @@ def main() -> None:
     common_ids = sorted(image_ids & label_ids)
 
     print(f"[INFO] Matched cases: {len(common_ids)}")
+    print("[INFO] Checking each matched case...")
 
     all_label_values = set()
-
-    print("[INFO] Checking each matched case...")
 
     # 逐个病例检查图像和标签是否一致
     for case_id in common_ids:
@@ -158,8 +164,8 @@ def main() -> None:
         all_label_values.update(unique_labels.tolist())
 
         if (
-            unique_labels.min() < EXPECTED_LABEL_MIN
-            or unique_labels.max() > EXPECTED_LABEL_MAX
+            unique_labels.min() < expected_label_min
+            or unique_labels.max() > expected_label_max
         ):
             print(f"[ERROR] Label values out of expected range in case {case_id}")
             print(f"[ERROR] Label file: {label_path.name}")
@@ -185,7 +191,7 @@ def main() -> None:
         print("[ERROR] This is probably NOT the BTCV 13-organ multi-class label set.")
         sys.exit(1)
 
-    expected_values = list(range(EXPECTED_LABEL_MIN, EXPECTED_LABEL_MAX + 1))
+    expected_values = list(range(expected_label_min, expected_label_max + 1))
     missing_values = sorted(set(expected_values) - set(all_label_values))
 
     if missing_values:
