@@ -1,0 +1,56 @@
+# Python cache and environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Medical image data
+*.nii
+*.nii.gz
+*.mha
+*.mhd
+*.nrrd
+
+# Model checkpoints and generated arrays
+*.pth
+*.pt
+*.ckpt
+*.model
+*.pkl
+*.npz
+*.npy
+*.b2nd
+
+# Logs and temporary runtime files
+logs/
+runs/
+wandb/
+tmp/
+temp/
+*.log
+training_log_*.txt
+
+# Keep project data directory layout, but do not track local datasets.
+data/**
+!data/**/
+!data/**/.gitkeep
+
+# Keep nnU-Net workspace layout, but do not track generated raw/preprocessed/results files.
+nnUNet_workspace/**
+!nnUNet_workspace/**/
+!nnUNet_workspace/**/.gitkeep
+
+# Keep project results layout, but do not track predictions, metrics, logs, or other runtime outputs.
+results/**
+!results/**/
+!results/**/.gitkeep
