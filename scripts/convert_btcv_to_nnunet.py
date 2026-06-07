@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import re
 import shutil
 import sys
@@ -85,8 +86,33 @@ def build_case_map(files: list[Path]) -> dict[str, Path]:
     return case_map
 
 
+def split_train_test_cases(
+    case_ids: list[str],
+    test_size: int,
+    random_seed: int,
+) -> tuple[list[str], list[str]]:
+    """使用固定随机种子划分训练集和测试集。"""
+    if test_size <= 0:
+        return case_ids, []
+
+    if test_size >= len(case_ids):
+        print("[ERROR] test_size must be smaller than total number of cases.")
+        sys.exit(1)
+
+    random_generator = random.Random(random_seed)
+    shuffled_case_ids = case_ids.copy()
+    random_generator.shuffle(shuffled_case_ids)
+
+    test_case_ids = sorted(shuffled_case_ids[:test_size])
+    train_case_ids = sorted(shuffled_case_ids[test_size:])
+
+    return train_case_ids, test_case_ids
+
+
 def make_dataset_json(
-    output_dataset_dir: Path, labels: dict, num_training: int
+    output_dataset_dir: Path,
+    labels: dict,
+    num_training: int,
 ) -> None:
     """生成 nnU-Net v2 所需的 dataset.json 文件。"""
     dataset_json = {
@@ -122,13 +148,21 @@ def main() -> None:
     output_dataset_dir = nnunet_raw_dir / nnunet_dataset_name
     images_tr_dir = output_dataset_dir / "imagesTr"
     labels_tr_dir = output_dataset_dir / "labelsTr"
-    # 如果 output_dataset_dir 已存在，是否覆盖
+    images_ts_dir = output_dataset_dir / "imagesTs"
+    labels_ts_dir = output_dataset_dir / "labelsTs"
+
     overwrite = bool(config.conversion.overwrite) if config.conversion else False
+    test_size = int(config.conversion.test_size) if config.conversion.test_size else 5
+    random_seed = (
+        int(config.conversion.random_seed) if config.conversion.random_seed else 42
+    )
 
     print("[INFO] Convert BTCV to nnU-Net v2 format started.")
     print(f"[INFO] Raw images dir: {raw_images_dir}")
     print(f"[INFO] Raw labels dir: {raw_labels_dir}")
     print(f"[INFO] Output dataset dir: {output_dataset_dir}")
+    print(f"[INFO] Test size: {test_size}")
+    print(f"[INFO] Random seed: {random_seed}")
 
     if not raw_images_dir.exists():
         print(f"[ERROR] Raw images folder does not exist: {raw_images_dir}")
@@ -165,6 +199,16 @@ def main() -> None:
 
     print(f"[INFO] Matched cases: {len(case_ids)}")
 
+    train_case_ids, test_case_ids = split_train_test_cases(
+        case_ids=case_ids,
+        test_size=test_size,
+        random_seed=random_seed,
+    )
+
+    print(f"[INFO] Training cases: {len(train_case_ids)}")
+    print(f"[INFO] Test cases: {len(test_case_ids)}")
+    print(f"[INFO] Test case ids: {test_case_ids}")
+
     if output_dataset_dir.exists():
         if overwrite:
             print(
@@ -180,9 +224,11 @@ def main() -> None:
 
     images_tr_dir.mkdir(parents=True, exist_ok=True)
     labels_tr_dir.mkdir(parents=True, exist_ok=True)
+    images_ts_dir.mkdir(parents=True, exist_ok=True)
+    labels_ts_dir.mkdir(parents=True, exist_ok=True)
 
-    # 复制并重命名为 nnU-Net v2 标准格式
-    for case_id in case_ids:
+    # 复制训练集
+    for case_id in train_case_ids:
         src_image = image_map[case_id]
         src_label = label_map[case_id]
 
@@ -194,19 +240,37 @@ def main() -> None:
         shutil.copy2(src_image, dst_image)
         shutil.copy2(src_label, dst_label)
 
-        print(f"[INFO] Image copied: {src_image.name} -> {dst_image.name}")
-        print(f"[INFO] Label copied: {src_label.name} -> {dst_label.name}")
+        print(f"[INFO] Train image copied: {src_image.name} -> {dst_image.name}")
+        print(f"[INFO] Train label copied: {src_label.name} -> {dst_label.name}")
+
+    # 复制测试集
+    for case_id in test_case_ids:
+        src_image = image_map[case_id]
+        src_label = label_map[case_id]
+
+        new_case_id = f"BTCV_{case_id}"
+
+        dst_image = images_ts_dir / f"{new_case_id}_0000.nii.gz"
+        dst_label = labels_ts_dir / f"{new_case_id}.nii.gz"
+
+        shutil.copy2(src_image, dst_image)
+        shutil.copy2(src_label, dst_label)
+
+        print(f"[INFO] Test image copied: {src_image.name} -> {dst_image.name}")
+        print(f"[INFO] Test label copied: {src_label.name} -> {dst_label.name}")
 
     make_dataset_json(
         output_dataset_dir=output_dataset_dir,
         labels=dict(config.labels),
-        num_training=len(case_ids),
+        num_training=len(train_case_ids),
     )
 
     print("[SUCCESS] BTCV has been converted to nnU-Net v2 format.")
     print(f"[INFO] Dataset ID: {dataset_id}")
     print(f"[INFO] Dataset name: {nnunet_dataset_name}")
     print(f"[INFO] Output: {output_dataset_dir}")
+    print(f"[INFO] Final training cases: {len(train_case_ids)}")
+    print(f"[INFO] Final test cases: {len(test_case_ids)}")
 
 
 if __name__ == "__main__":
