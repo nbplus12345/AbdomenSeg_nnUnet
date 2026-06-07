@@ -18,6 +18,23 @@ dataset:
   expected_label_min: 0
   expected_label_max: 13
 
+conversion:
+  overwrite: true
+  test_size: 5
+  random_seed: 42
+
+nnunet:
+  n_proc_DA: 1
+
+preprocess:
+  verify_dataset_integrity: true
+
+training:
+  configuration: 3d_fullres
+  folds: [0,1,2,3,4]
+  continue_training: false
+  trainer: nnUNetTrainer_200epochs
+
 labels:
   background: 0
   spleen: 1
