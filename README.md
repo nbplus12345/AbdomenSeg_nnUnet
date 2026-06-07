@@ -147,13 +147,13 @@ conda activate abdomenseg_nnunet
 pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 ```
 
-* AMD ROCm 用户请根据 PyTorch 官方安装页面选择与本机驱动和 ROCm 版本匹配的安装命令，例如：
+- AMD ROCm 用户请根据 PyTorch 官方安装页面选择与本机驱动和 ROCm 版本匹配的安装命令，例如：
 
 ```Bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm7.2
 ```
 
-* CPU 或 Mac 用户可以直接安装 CPU 版本 PyTorch，速度会明显慢于 GPU 环境。
+- CPU 或 Mac 用户可以直接安装 CPU 版本 PyTorch，速度会明显慢于 GPU 环境。
 
 ### 4、安装项目剩余依赖
 
@@ -178,18 +178,18 @@ data/
  │   ├── img0002.nii.gz  
  │   └── ...  
  └── labels/ # BTCV 原始多器官标签，标签值范围为 0-13  
-  ├── label0001.nii.gz  
-  ├── label0002.nii.gz  
-  └── ...
+     ├── label0001.nii.gz  
+     ├── label0002.nii.gz  
+     └── ...
 ```
 
-3. 随后运行数据集预检查脚本，该脚本自动检查数据集的完整性：
+1. 随后运行数据集预检查脚本，该脚本自动检查数据集的完整性：
 
 ```Bash
 python scripts/check_btcv_raw.py --config config/config.yaml
 ```
 
-4. 随后运行数据集转换脚本，该脚本采用固定随机种子划分数据，自动将原始数据集转化为 nnU-Net v2 要求的格式，并分出5例测试集：
+1. 随后运行数据集转换脚本，该脚本采用固定随机种子划分数据，自动将原始数据集转化为 nnU-Net v2 要求的格式，并分出5例测试集：
 
 ```Bash
 python scripts/convert_btcv_to_nnunet.py --config config/config.yaml
@@ -197,8 +197,6 @@ python scripts/convert_btcv_to_nnunet.py --config config/config.yaml
 
 >其中，25 例训练数据进一步用于 nnU-Net v2 的 5-fold cross-validation，每折用20例训练，5例用于验证。
 >独立测试集 5 例仅用于最终推理和测试评估，不参与训练和验证。
-
-_切分完成后，原始 `images/` 和 `labels/` 可以保留作为备份，也可以根据需要自行删除。_
 
 ## 训练与测试
 
