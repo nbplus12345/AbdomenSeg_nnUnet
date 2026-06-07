@@ -110,7 +110,7 @@ Training epochs: 200
 | Train / Val |    25 |    80.53% |
 | Test        |     5 |    81.82% |
 
-_Mean Dice 指 25 例训练验证数据上 5-fold cross-validation 的平均验证 Dice。_
+_Train / Val 的 Mean Dice 指 25 例训练验证数据上 5-fold cross-validation 的平均验证 Dice；Test 的 Mean Dice 指 5 例独立测试集上的平均 Dice。_
 
 ## 环境配置
 
@@ -205,7 +205,7 @@ python scripts/convert_btcv_to_nnunet.py --config config/config.yaml
 nnU-Net v2 默认训练轮数较长。对于本项目的小规模 BTCV 实验，提供了自定义 trainer，将最大训练轮数调整为 200 epochs。
 
 ```shell
-python scripts/install_custom_trainer.py --config config/config.yaml
+python scripts/install_custom_trainer.py
 ```
 
 安装后训练时使用：
