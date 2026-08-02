@@ -1,95 +1,96 @@
-# AbdomenSeg_nnUnet：基于 nnU-Net v2 的腹部多器官分割系统
+# AbdomenSeg_nnUnet: nnU-Net v2-Based Abdominal Multi-Organ Segmentation System
+[English](./README.md) | [简体中文](./README_zh-CN.md)
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/Python-3.10-blue)
 [![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=flat&logo=PyTorch&logoColor=white)](https://pytorch.org/)
 ![nnU-Net](https://img.shields.io/badge/Framework-nnU--Net%20v2-success)
 
-## 项目简介
+## Project Overview
 
-本项目基于 **BTCV 30 例腹部 CT 多器官分割数据集**，使用 **nnU-Net v2** 完成腹部多器官分割任务。
+This project uses **nnU-Net v2** to perform abdominal multi-organ segmentation on the **BTCV dataset of 30 abdominal CT cases**.
 
-项目完整实践了 nnU-Net v2 从数据格式转换、数据完整性检查、dataset fingerprint 提取、experiment planning、自动预处理、5-fold cross-validation 训练、验证评估、测试集预测到分割结果可视化的端到端流程。
+It implements the complete end-to-end nnU-Net v2 workflow, from data format conversion, integrity checks, dataset fingerprint extraction, experiment planning, automatic preprocessing, 5-fold cross-validation training, validation and evaluation, and test-set prediction to segmentation result visualization.
 
-本项目的重点不是手写一个新的 U-Net 网络，而是理解并复现 nnU-Net 作为医学图像分割领域经典 **self-configuring framework** 的完整工作流。
+The focus is not to hand-code a new U-Net network, but to understand and reproduce the complete workflow of nnU-Net as a classic **self-configuring framework** for medical image segmentation.
 
-## 项目亮点
+## Project Highlights
 
-- **完整 nnU-Net v2 流程实践**：数据检查、格式转换、5-fold 训练及预测。
-- **标准医学影像分割数据组织**：构建 `Dataset501_BTCV`，包含 `imagesTr`、`labelsTr`、`imagesTs`、`labelsTs` 和 `dataset.json`。  
-- **5-fold 交叉验证 + 独立测试集**：25 例用于 5-fold cross-validation，5 例作为独立测试集。  
-- **自定义 200 epoch trainer**：针对小样本实验将默认 1000 epochs 调整为 200 epochs，提高实验效率。  
+- **Complete nnU-Net v2 workflow**: Data checking, format conversion, 5-fold training, and prediction.
+- **Standard medical image segmentation data organization**: Builds `Dataset501_BTCV` with `imagesTr`, `labelsTr`, `imagesTs`, `labelsTs`, and `dataset.json`.  
+- **5-fold cross-validation + independent test set**: 25 cases are used for 5-fold cross-validation and 5 cases form an independent test set.  
+- **Custom 200-epoch trainer**: Reduces the default 1,000 epochs to 200 for the small-sample experiment, improving experimental efficiency.  
 
-## 快速预览
+## Quick Preview
 
-### 分割效果
+### Segmentation Results
 
-> 左侧为原始 CT，中间为 Ground Truth，右侧为 Prediction。
+> The original CT is shown on the left, Ground Truth in the middle, and Prediction on the right.
 
 ![Segmentation comparison](assets/seg_compare.gif)
 
-### 项目流程
+### Project Workflow
 
 ![nnU-Net pipeline](assets/pipeline.png)
 
-### 运行过程
+### Execution Process
 
 ![nnU-Net training process](assets/nnunet_training.png)
 
 ---
 
-## 项目结构
+## Project Structure
 
 ```text
 AbdomenSeg_nnUnet/
-├── README.md                              # 项目说明文档
-├── LICENSE                                # MIT 开源协议
-├── requirements.txt                       # Python 依赖列表
+├── README.md                              # Project documentation
+├── LICENSE                                # MIT License
+├── requirements.txt                       # Python dependencies
 ├── config/
-│   └── config.yaml                        # 项目路径、数据划分、训练配置
+│   └── config.yaml                        # Project paths, data split, and training configuration
 ├── data/
 │   └── BTCV_raw/
-│       ├── images/                        # BTCV 原始 CT 图像，格式为 .nii.gz
-│       └── labels/                        # BTCV 原始多器官标签，标签值范围为 0-13
+│       ├── images/                        # Original BTCV CT images in .nii.gz format
+│       └── labels/                        # Original BTCV multi-organ labels with values from 0 to 13
 ├── nnUNet_workspace/
-│   ├── nnUNet_raw/                        # nnU-Net v2 标准 raw 数据目录
-│   ├── nnUNet_preprocessed/               # nnU-Net v2 预处理结果目录
-│   └── nnUNet_results/                    # nnU-Net v2 训练结果、checkpoint 和验证输出
+│   ├── nnUNet_raw/                        # Standard nnU-Net v2 raw data directory
+│   ├── nnUNet_preprocessed/               # nnU-Net v2 preprocessing output
+│   └── nnUNet_results/                    # nnU-Net v2 training results, checkpoints, and validation output
 ├── scripts/
-│   ├── check_btcv_raw.py                  # 检查原始 BTCV 图像与标签是否匹配
-│   ├── convert_btcv_to_nnunet.py          # 转换为 nnU-Net v2 格式，并划分 5 例测试集
-│   ├── install_custom_trainer.py          # 注册自定义 200 epoch trainer
-│   ├── run_plan_preprocess.py             # 自动设置环境变量并执行 planning + preprocessing
-│   └── run_train_5fold.py                 # 按顺序运行 5-fold training
+│   ├── check_btcv_raw.py                  # Check whether original BTCV images and labels match
+│   ├── convert_btcv_to_nnunet.py          # Convert to nnU-Net v2 format and split out 5 test cases
+│   ├── install_custom_trainer.py          # Register the custom 200-epoch trainer
+│   ├── run_plan_preprocess.py             # Set environment variables and run planning + preprocessing
+│   └── run_train_5fold.py                 # Run 5-fold training sequentially
 ├── utils/
-│   ├── config_utils.py                    # YAML 配置读取与点号访问工具
-│   └── logger_utils.py                    # 通用日志工具
+│   ├── config_utils.py                    # YAML configuration reader with dot notation access
+│   └── logger_utils.py                    # General logging utility
 ├── assets/
-│   ├── seg_compare.gif                    # 测试集分割效果对比 GIF
-│   ├── pipeline.png                       # nnU-Net 项目流程图
-│   └── nnunet_training.png                # 训练过程截图
+│   ├── seg_compare.gif                    # Test-set segmentation comparison GIF
+│   ├── pipeline.png                       # nnU-Net project workflow diagram
+│   └── nnunet_training.png                # Training process screenshot
 └── results/
-    └── test_predictions_5fold/            # 测试集预测输出标签，格式为 .nii.gz
+    └── test_predictions_5fold/            # Test prediction labels in .nii.gz format
 ```
 
-## 方法说明
+## Method
 
-本项目使用 **nnU-Net v2** 作为核心分割框架。
+This project uses **nnU-Net v2** as its core segmentation framework.
 
-与手动搭建 U-Net、设置 patch size、loss、optimizer 和 scheduler 的训练方式不同，nnU-Net 会根据数据集特征自动完成多项配置：
+Unlike manually building a U-Net and configuring the patch size, loss, optimizer, and scheduler, nnU-Net automatically configures multiple aspects based on the dataset characteristics:
 
-- 图像 spacing 分析
-- intensity statistics 统计
-- patch size 自动规划
-- batch size 自动规划
-- normalization strategy 选择
-- 2D / 3D full resolution / 3D low resolution 配置生成
-- 训练与验证 fold 划分
-- 推理时 sliding window prediction
+- Image spacing analysis
+- Intensity statistics
+- Automatic patch size planning
+- Automatic batch size planning
+- Normalization strategy selection
+- Generation of 2D / 3D full resolution / 3D low resolution configurations
+- Training and validation fold split
+- Sliding-window prediction during inference
 
-本项目主要使用 nnU-Net v2 生成的 `3d_fullres` 配置进行训练和推理。
+This project primarily uses the `3d_fullres` configuration generated by nnU-Net v2 for training and inference.
 
-当前自动规划出的关键配置如下：
+The current automatically planned key configuration is:
 
 ```text
 Configuration: 3d_fullres
@@ -101,114 +102,114 @@ Normalization: CTNormalization
 Training epochs: 200
 ```
 
-## 结果与性能
+## Results and Performance
 
-数据集划分与结果如下：
+The dataset split and results are:
 
 | Split       | Cases | Mean Dice |
 | ----------- | ----: | --------: |
 | Train / Val |    25 |    80.53% |
 | Test        |     5 |    81.82% |
 
-_Train / Val 的 Mean Dice 指 25 例训练验证数据上 5-fold cross-validation 的平均验证 Dice；Test 的 Mean Dice 指 5 例独立测试集上的平均 Dice。_
+_The Train / Val Mean Dice is the mean validation Dice from 5-fold cross-validation over 25 training and validation cases. The Test Mean Dice is the mean Dice over the 5 independent test cases._
 
-## 环境配置
+## Environment Setup
 
-本项目已在以下环境完成运行测试：
+This project has been tested in the following environments:
 
-| 操作系统                           | 计算设备 / GPU                 | 硬件后端 | 版本                     |
+| Operating System | Compute Device / GPU | Hardware Backend | Version |
 | :----------------------------- | :------------------------- | :--- | :--------------------- |
 | **Windows 11**                 | NVIDIA RTX 5060 8G         | CUDA | PyTorch-2.8.0+cu128    |
 | **Linux (Ubuntu 24.04.4 LTS)** | AMD Radeon RX 7900 XTX 24G | ROCm | PyTorch-2.11.0+rocm7.2 |
 
-我们推荐使用 Conda 管理环境，具体命令如下：
+We recommend using Conda to manage the environment. The commands are as follows:
 
-### 1、克隆仓库
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/nbplus12345/AbdomenSeg_nnUnet.git
 cd AbdomenSeg_nnUnet
 ```
 
-### 2、创建激活conda环境
+### 2. Create and Activate the Conda Environment
 
 ```bash
 conda create -n abdomenseg_nnunet python=3.10 -y
 conda activate abdomenseg_nnunet
 ```
 
-### 3. 安装核心深度学习框架 (PyTorch)
+### 3. Install the Core Deep Learning Framework (PyTorch)
 
-请根据你电脑的硬件情况，选择以下【其中一种】方式安装 PyTorch：
+Choose **one** of the following PyTorch installation methods based on your computer hardware:
 
-- NVIDIA CUDA 用户可参考：
+- NVIDIA CUDA users can use:
 
 ```Bash
 pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 ```
 
-- AMD ROCm 用户请根据 PyTorch 官方安装页面选择与本机驱动和 ROCm 版本匹配的安装命令，例如：
+- AMD ROCm users should select an installation command from the official PyTorch installation page that matches their local driver and ROCm version. For example:
 
 ```Bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm7.2
 ```
 
-- CPU 或 Mac 用户可以直接安装 CPU 版本 PyTorch，速度会明显慢于 GPU 环境。
+- CPU or Mac users can install the CPU build of PyTorch directly, though it will be significantly slower than a GPU environment.
 
-### 4、安装项目剩余依赖
+### 4. Install the Remaining Project Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 数据集准备
+## Data Preparation
 
-本项目使用 **BTCV (Beyond the Cranial Vault)** 腹部多器官分割数据集中的 30 例带标注训练数据。该数据集为腹部 CT 多器官分割任务，标签包含背景类与 13 个腹部器官类别。  
+This project uses the 30 annotated training cases from the **BTCV (Beyond the Cranial Vault)** abdominal multi-organ segmentation dataset. The dataset is designed for abdominal CT multi-organ segmentation, with labels covering the background and 13 abdominal organ classes.  
   
-本项目首先将 BTCV 原始数据转换为 nnU-Net v2 要求的标准格式，然后由 nnU-Net v2 在训练阶段基于 fold 机制完成交叉验证。
+The project first converts the original BTCV data into the standard format required by nnU-Net v2. During training, nnU-Net v2 then performs cross-validation through its fold mechanism.
 
-1. 请前往 [Kaggle - BTCV Dataset](https://www.kaggle.com/) 或官方 [Synapse 平台](https://www.synapse.org/) 下载 BTCV 的训练集数据（请确认下载的是 BTCV training raw data，标签应为 0-13 的多类别 label，而不是二值标签）。
-2. 下载并解压后，请将图像文件夹与标签文件夹分别重命名为 `images` 和 `labels`，并放入项目的 `data/` 目录下，初始数据目录结构应如下所示：
+1. Download the BTCV training data from [Kaggle - BTCV Dataset](https://www.kaggle.com/) or the official [Synapse platform](https://www.synapse.org/) (make sure to download the BTCV training raw data; labels should be multiclass values from 0 to 13, not binary labels).
+2. After downloading and extracting the data, rename the image and label folders to `images` and `labels`, respectively, and place them under the project's `data/` directory. The initial directory structure should be:
 
 ```Plaintext
 data/  
 └── BTCV_raw/  
- ├── images/ # BTCV 原始 CT 图像，格式为 .nii.gz  
+ ├── images/ # Original BTCV CT images in .nii.gz format  
  │   ├── img0001.nii.gz  
  │   ├── img0002.nii.gz  
  │   └── ...  
- └── labels/ # BTCV 原始多器官标签，标签值范围为 0-13  
+ └── labels/ # Original BTCV multi-organ labels with values from 0 to 13  
      ├── label0001.nii.gz  
      ├── label0002.nii.gz  
      └── ...
 ```
 
-1. 随后运行数据集预检查脚本，该脚本自动检查数据集的完整性：
+1. Next, run the dataset pre-check script, which automatically verifies dataset integrity:
 
 ```Bash
 python scripts/check_btcv_raw.py --config config/config.yaml
 ```
 
-1. 随后运行数据集转换脚本，该脚本采用固定随机种子划分数据，自动将原始数据集转化为 nnU-Net v2 要求的格式，并分出5例测试集：
+1. Then run the dataset conversion script. It uses a fixed random seed to split the data, automatically converts the original dataset into the format required by nnU-Net v2, and separates 5 cases as the test set:
 
 ```Bash
 python scripts/convert_btcv_to_nnunet.py --config config/config.yaml
 ```
 
->其中，25 例训练数据进一步用于 nnU-Net v2 的 5-fold cross-validation，每折用20例训练，5例用于验证。
->独立测试集 5 例仅用于最终推理和测试评估，不参与训练和验证。
+> The 25 training cases are subsequently used for nnU-Net v2 5-fold cross-validation, with 20 cases for training and 5 cases for validation in each fold.
+> The 5 independent test cases are used only for final inference and test evaluation; they do not participate in training or validation.
 
-## 训练与测试
+## Training and Testing
 
-### 1. 安装自定义 200 epoch trainer
+### 1. Install the Custom 200-Epoch Trainer
 
-nnU-Net v2 默认训练轮数较长。对于本项目的小规模 BTCV 实验，提供了自定义 trainer，将最大训练轮数调整为 200 epochs。
+The default nnU-Net v2 training schedule is long. For this project's small-scale BTCV experiment, a custom trainer limits the maximum number of training epochs to 200.
 
 ```shell
 python scripts/install_custom_trainer.py
 ```
 
-安装后训练时使用：
+Use the following option during training after installation:
 
 ```
 -tr nnUNetTrainer_200epochs
@@ -216,62 +217,62 @@ python scripts/install_custom_trainer.py
 
 ### 2. Planning and Preprocessing
 
-运行预处理脚本：
+Run the preprocessing script:
 
 ```shell
 python scripts/run_plan_preprocess.py --config config/config.yaml
 ```
 
-该脚本会自动设置 nnU-Net v2 所需环境变量，并执行：
+The script automatically sets the environment variables required by nnU-Net v2 and runs:
 
 ```shell
 nnUNetv2_plan_and_preprocess -d 501 --verify_dataset_integrity
 ```
 
-该步骤会完成：
+This step performs:
 
-- 数据完整性检查
-- dataset fingerprint 提取
-- experiment planning
-- 预处理数据生成
+- Dataset integrity checking
+- Dataset fingerprint extraction
+- Experiment planning
+- Preprocessed data generation
 
-### 3. 5-fold 训练
+### 3. 5-Fold Training
 
-项目中的主要参数集中在 `config/config.yaml` 中，包括数据路径、折数、断点续训、trainer类型等。训练命令如下：
+The main project parameters are centralized in `config/config.yaml`, including data paths, fold count, training resumption, and trainer type. Run training with:
 
 ```Bash
 python scripts/run_train_5fold.py --config config/config.yaml
 ```
 
-该脚本会按顺序训练：
+The script trains the folds sequentially:
 
 ```
 fold 0 → fold 1 → fold 2 → fold 3 → fold 4
 ```
 
-如果训练中断，可在 `config.yaml` 中设置：
+If training is interrupted, set the following in `config.yaml`:
 
 ```
 training:  
  continue_training: true
 ```
 
-### 4. 验证
+### 4. Validation
 
-使用 5-fold cross-validation 进行内部验证：
+Perform internal validation with 5-fold cross-validation:
 
 ```Bash
 nnUNetv2_find_best_configuration 501 -c 3d_fullres -tr nnUNetTrainer_200epochs
 ```
 
-说明：
+Notes:
 
-- 该指标为 25 例训练验证数据上的 5-fold cross-validation 结果。
-- 独立测试集不参与该分数计算。
+- This metric is the 5-fold cross-validation result over the 25 training and validation cases.
+- The independent test set does not contribute to this score.
 
-### 5. 测试集预测
+### 5. Test-Set Prediction
 
-完成 5-fold 训练后，可对独立测试集进行预测：
+After completing 5-fold training, make predictions on the independent test set:
 
 ```Bash
 nnUNetv2_predict \
@@ -286,7 +287,7 @@ nnUNetv2_predict \
   -nps 1
 ```
 
-输出结果为 `.nii.gz` segmentation label，可使用 ITK-SNAP、3D Slicer 或 Python 可视化。
+The output is a `.nii.gz` segmentation label that can be visualized with ITK-SNAP, 3D Slicer, or Python.
 
 ```
 results/
@@ -296,9 +297,9 @@ results/
  └── ...
 ```
 
-### 6. 测试集评估  
+### 6. Test-Set Evaluation  
   
-预测完成后，可以使用 `labelsTs` 作为 ground truth，对 `test_predictions_5fold` 中的预测标签计算测试集 Dice：  
+After prediction, use `labelsTs` as the ground truth to calculate test-set Dice for the predicted labels in `test_predictions_5fold`:  
   
 ```Bash  
 nnUNetv2_evaluate_folder \  
@@ -310,31 +311,31 @@ nnUNetv2_evaluate_folder \
 -np 1
 ```
 
-评估完成后会生成：
+After evaluation, the following file is generated:
 
 ```
 results/test_predictions_5fold/summary.json
 ```
 
-## 局限
+## Limitations
 
-- **数据规模较小**  
-    BTCV 训练集仅包含 30 例带标注数据。本项目划分 25 例用于 5-fold cross-validation，5 例作为独立测试集，样本量仍然有限。
-- **测试集规模有限**  
-    独立测试集只有 5 例，因此测试结果只能作为项目实验参考，不能代表严格泛化性能。
-- **未与其他方法系统对比**  
-    本项目重点是复现和理解 nnU-Net v2 流程，尚未与 TransUNet、UNETR、SwinUNETR 等模型进行系统对比。
-- **未进行外部数据集验证**  
-    当前实验仅基于 BTCV 数据集，没有在其他腹部 CT 数据集上验证模型泛化能力。
-- **工程部署仍可扩展**  
-    当前主要完成训练、验证和 NIfTI 标签预测，尚未进行模型部署、推理加速、TensorRT 或临床工作流集成。
+- **Small dataset**  
+    The BTCV training set contains only 30 annotated cases. This project uses 25 cases for 5-fold cross-validation and 5 cases as an independent test set, so the sample size remains limited.
+- **Limited test-set size**  
+    The independent test set contains only 5 cases, so the test results should be treated only as a project experiment reference and do not establish rigorous generalization performance.
+- **No systematic comparison with other methods**  
+    This project focuses on reproducing and understanding the nnU-Net v2 workflow and has not yet systematically compared it with models such as TransUNet, UNETR, or SwinUNETR.
+- **No external dataset validation**  
+    Current experiments use only the BTCV dataset; model generalization has not been evaluated on other abdominal CT datasets.
+- **Deployment can be expanded further**  
+    The project currently covers training, validation, and NIfTI label prediction, but does not yet include model deployment, inference acceleration, TensorRT, or clinical workflow integration.
 
-## 总结
+## Summary
 
-本项目完成了基于 nnU-Net v2 的 BTCV 腹部多器官分割实验，包括数据检查、格式转换、自动预处理、5-fold cross-validation、测试集预测和分割结果可视化。
+This project completes an nnU-Net v2 experiment for BTCV abdominal multi-organ segmentation, including data checking, format conversion, automatic preprocessing, 5-fold cross-validation, test-set prediction, and segmentation result visualization.
 
-该项目主要用于学习和展示 nnU-Net v2 在 3D 医学影像分割任务中的标准使用流程，以及小样本医学图像分割实验的完整工程实践。
+It is primarily intended to demonstrate and study the standard nnU-Net v2 workflow for 3D medical image segmentation and the complete engineering practice of small-sample medical image segmentation experiments.
 
-## 开源协议
+## License
 
-本项目基于 MIT License 开源，允许自由使用、修改和分发。详细条款请见 [LICENSE](./LICENSE) 文件。
+This project is open-sourced under the MIT License and may be freely used, modified, and distributed. See the [LICENSE](./LICENSE) file for details.
